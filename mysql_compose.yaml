@@ -1,0 +1,112 @@
+version: "3"
+
+
+services:
+
+  zabbix-mysql:
+    image: mysql:8.0.33
+    container_name: zabbix-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix_pwd
+      MYSQL_ROOT_PASSWORD: root_pwd
+    volumes:
+      - ./mysql/log:/var/log/mysql
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/conf:/etc/mysql/conf.d
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_bin
+      - --default-authentication-plugin=mysql_native_password
+    ports:
+      - 3306:3306
+    networks:
+      - monitor-net
+
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql:6.4-alpine-latest
+    container_name: zabbix-server
+    restart: unless-stopped
+#    privileged: true
+    user: root
+    environment:
+      DB_SERVER_HOST: zabbix-mysql
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix_pwd
+      MYSQL_ROOT_PASSWORD: root_pwd
+#      ZBX_CACHESIZE: 1G
+    volumes:
+      - ./zabbix_server/usr/lib/zabbix/alertscripts:/usr/lib/zabbix/alertscripts
+      - ./zabbix_server/usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts
+      - ./zabbix_server/var/lib/zabbix/modules:/var/lib/zabbix/modules
+      - ./zabbix_server/var/lib/zabbix/enc:/var/lib/zabbix/enc
+      - ./zabbix_server/var/lib/zabbix/ssl/certs:/var/lib/zabbix/ssl/certs
+      - ./zabbix_server/var/lib/zabbix/ssl/keys:/var/lib/zabbix/ssl/keys
+      - ./zabbix_server/var/lib/zabbix/ssl/ssl_ca:/var/lib/zabbix/ssl/ssl_ca
+      - ./zabbix_server/var/lib/zabbix/snmptraps:/var/lib/zabbix/snmptraps
+      - ./zabbix_server/var/lib/zabbix/mibs:/var/lib/zabbix/mibs
+#      - ./zabbix_server/etc/zabbix:/etc/zabbix
+      - ./zabbix_server/tmp:/tmp
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    ports:
+      - 10051:10051
+    depends_on:
+      - zabbix-mysql
+    networks:
+      - monitor-net
+
+  zabbix-web:  # 默认登录账号密码：Admin/zabbix
+    image: zabbix/zabbix-web-nginx-mysql:6.4-alpine-latest
+    container_name: zabbix-web
+    restart: unless-stopped
+    environment:
+      ZBX_SERVER_HOST: zabbix-server
+      DB_SERVER_HOST: zabbix-mysql
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix_pwd
+      MYSQL_ROOT_PASSWORD: root_pwd
+      PHP_TZ: Asia/Shanghai
+    volumes:
+      - ./zabbix_web/etc/ssl/nginx:/etc/ssl/nginx
+    ports:
+      - 8080:8080
+    depends_on:
+      - zabbix-mysql
+      - zabbix-server
+    networks:
+      - monitor-net
+
+  grafana:  # 默认登录账号密码：admin/admin
+    image: grafana/grafana:10.3.1
+    container_name: grafana
+    restart: unless-stopped
+    user: root
+    environment:
+      - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app
+    volumes:
+      - ../grafana:/var/lib/grafana
+    ports:
+      - 80:3000
+    depends_on:
+      - zabbix-mysql
+      - zabbix-server
+      - zabbix-web
+    networks:
+      - monitor-net
+
+
+networks:
+
+  monitor-net:
+    driver: bridge
+    name: monitor-net
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.30.2.0/24
