@@ -15,14 +15,13 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - ./pgsql/data:/var/lib/postgresql/data  # 数据挂载
-    # Docker日志
-    logging:
+    logging:  # Docker日志
       driver: json-file
       options:
         max-size: 500m
         max-file: 3
     ports:
-      - "5432:5432"
+      - 5432:5432
     networks:
       - monitor-net
 
@@ -40,15 +39,6 @@ services:
       POSTGRES_PASSWORD: zabbix
 #      ZBX_CACHESIZE: 1G
     volumes:
-#      - /usr/zabbix_project/zabbix_server/usr/lib/zabbix/alertscripts:/usr/lib/zabbix/alertscripts
-#      - /usr/zabbix_project/zabbix_server/usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts
-#      - /usr/zabbix_project/zabbix_server/var/lib/zabbix/modules:/var/lib/zabbix/modules
-#      - /usr/zabbix_project/zabbix_server/var/lib/zabbix/enc:/var/lib/zabbix/enc
-#      - /usr/zabbix_project/zabbix_server/var/lib/zabbix/ssl/certs:/var/lib/zabbix/ssl/certs
-#      - /usr/zabbix_project/zabbix_server/var/lib/zabbix/ssl/keys:/var/lib/zabbix/ssl/keys
-#      - /usr/zabbix_project/zabbix_server/var/lib/zabbix/ssl/ssl_ca:/var/lib/zabbix/ssl/ssl_ca
-#      - /usr/zabbix_project/zabbix_server/var/lib/zabbix/snmptraps:/var/lib/zabbix/snmptraps
-#      - /usr/zabbix_project/zabbix_server/var/lib/zabbix/mibs:/var/lib/zabbix/mibs
       - ./zabbix_server/usr/lib/zabbix:/usr/lib/zabbix
       - ./zabbix_server/var/lib/zabbix:/var/lib/zabbix
       - ./zabbix_server/etc/zabbix:/etc/zabbix
@@ -56,16 +46,16 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     ports:
-      - "10051:10051"
+      - 10051:10051
     depends_on:
       - zabbix-pgsql
     networks:
       - monitor-net
 
-  zabbix-web:
+  zabbix-web:  # zabbix-web默认登录账号密码：Admin/zabbix
     image: zabbix/zabbix-web-nginx-pgsql:6.0-alpine-latest
     container_name: zabbix-web
-    restart: unless-stopped
+    restart: always
     environment:
       ZBX_SERVER_HOST: zabbix-server
       DB_SERVER_HOST: zabbix-pgsql
@@ -76,25 +66,24 @@ services:
     volumes:
       - ./zabbix_web/etc/ssl/nginx:/etc/ssl/nginx
     ports:
-      - "8080:8080"
+      - 8080:8080
     depends_on:
       - zabbix-pgsql
       - zabbix-server
     networks:
       - monitor-net
-# zabbix-web默认登录账号密码：Admin/zabbix
 
-  grafana:
-    image: grafana/grafana:10.3.1
+  grafana:  # grafana默认登录账号密码：admin/admin
+    image: grafana/grafana:10.3.3
     container_name: grafana
-    restart: unless-stopped
+    restart: always
     user: root
     environment:
-      - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app
+      - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app  # 安装zabbix插件
     volumes:
       - ./grafana:/var/lib/grafana
     ports:
-      - "80:3000"
+      - 80:3000
     depends_on:
       - zabbix-pgsql
       - zabbix-server
