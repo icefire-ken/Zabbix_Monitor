@@ -79,7 +79,8 @@ services:
     restart: always
     user: root
     environment:
-      - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app  # 安装zabbix插件
+      TZ: Asia/Shanghai
+      GF_INSTALL_PLUGINS: alexanderzobnin-zabbix-app  # 安装zabbix插件
     volumes:
       - ./grafana:/var/lib/grafana
     ports:
