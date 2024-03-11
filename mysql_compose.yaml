@@ -83,7 +83,7 @@ services:
       - monitor-net
 
   grafana:  # 默认登录账号密码：admin/admin
-    image: grafana/grafana:10.3.1
+    image: grafana/grafana:10.3.3
     container_name: grafana
     restart: always
     user: root
