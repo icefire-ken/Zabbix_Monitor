@@ -6,7 +6,7 @@ services:
   zabbix-mysql:
     image: mysql:8.0.33
     container_name: zabbix-mysql
-    restart: unless-stopped
+    restart: always
     environment:
       MYSQL_DATABASE: zabbix
       MYSQL_USER: zabbix
@@ -29,7 +29,7 @@ services:
   zabbix-server:
     image: zabbix/zabbix-server-mysql:6.4-alpine-latest
     container_name: zabbix-server
-    restart: unless-stopped
+    restart: always
 #    privileged: true
     user: root
     environment:
@@ -63,7 +63,7 @@ services:
   zabbix-web:  # 默认登录账号密码：Admin/zabbix
     image: zabbix/zabbix-web-nginx-mysql:6.4-alpine-latest
     container_name: zabbix-web
-    restart: unless-stopped
+    restart: always
     environment:
       ZBX_SERVER_HOST: zabbix-server
       DB_SERVER_HOST: zabbix-mysql
@@ -85,10 +85,11 @@ services:
   grafana:  # 默认登录账号密码：admin/admin
     image: grafana/grafana:10.3.1
     container_name: grafana
-    restart: unless-stopped
+    restart: always
     user: root
     environment:
-      - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app
+      TZ: Asia/Shanghai
+      GF_INSTALL_PLUGINS: alexanderzobnin-zabbix-app  # 安装zabbix插件
     volumes:
       - ../grafana:/var/lib/grafana
     ports:
