@@ -74,7 +74,7 @@ services:
       - monitor-net
 
   grafana:  # grafana默认登录账号密码：admin/admin
-    image: grafana/grafana:10.3.3
+    image: grafana/grafana:10.3.4-ubuntu
     container_name: grafana
     restart: always
     user: root
