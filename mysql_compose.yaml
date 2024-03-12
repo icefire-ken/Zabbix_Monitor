@@ -4,7 +4,7 @@ version: "3"
 services:
 
   zabbix-mysql:
-    image: mysql:8.0.33
+    image: mysql:8.3
     container_name: zabbix-mysql
     restart: always
     environment:
@@ -27,7 +27,7 @@ services:
       - monitor-net
 
   zabbix-server:
-    image: zabbix/zabbix-server-mysql:6.4-alpine-latest
+    image: zabbix/zabbix-server-mysql:6.4-ubuntu-latest
     container_name: zabbix-server
     restart: always
 #    privileged: true
@@ -61,7 +61,7 @@ services:
       - monitor-net
 
   zabbix-web:  # 默认登录账号密码：Admin/zabbix
-    image: zabbix/zabbix-web-nginx-mysql:6.4-alpine-latest
+    image: zabbix/zabbix-web-nginx-mysql:6.4-ubuntu-latest
     container_name: zabbix-web
     restart: always
     environment:

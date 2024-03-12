@@ -4,7 +4,7 @@ version: "3"
 services:
 
   zabbix-pgsql:
-    image: postgres:15.6
+    image: postgres:16-alpine
     container_name: zabbix-pgsql
     restart: always
     privileged: true
@@ -26,7 +26,7 @@ services:
       - monitor-net
 
   zabbix-server:
-    image: zabbix/zabbix-server-pgsql:6.4-alpine-latest
+    image: zabbix/zabbix-server-pgsql:6.4-ubuntu-latest
     container_name: zabbix-server
     restart: always
     privileged: true
@@ -53,7 +53,7 @@ services:
       - monitor-net
 
   zabbix-web:  # zabbix-web默认登录账号密码：Admin/zabbix
-    image: zabbix/zabbix-web-nginx-pgsql:6.4-alpine-latest
+    image: zabbix/zabbix-web-nginx-pgsql:6.4-ubuntu-latest
     container_name: zabbix-web
     restart: always
     environment:
