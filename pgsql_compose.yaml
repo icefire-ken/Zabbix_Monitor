@@ -6,7 +6,7 @@ services:
   zabbix-pgsql:
     image: postgres:16-alpine
     container_name: zabbix-pgsql
-    restart: always
+    restart: unless-stopped
     privileged: true
     environment:
       POSTGRES_DB: zabbix  # 数据库
@@ -28,7 +28,7 @@ services:
   zabbix-server:
     image: zabbix/zabbix-server-pgsql:6.4-ubuntu-latest
     container_name: zabbix-server
-    restart: always
+    restart: unless-stopped
     privileged: true
     user: root
     environment:
@@ -55,7 +55,7 @@ services:
   zabbix-web:  # zabbix-web默认登录账号密码：Admin/zabbix
     image: zabbix/zabbix-web-nginx-pgsql:6.4-ubuntu-latest
     container_name: zabbix-web
-    restart: always
+    restart: unless-stopped
     environment:
       ZBX_SERVER_HOST: zabbix-server
       DB_SERVER_HOST: zabbix-pgsql
@@ -76,7 +76,7 @@ services:
   grafana:  # grafana默认登录账号密码：admin/admin
     image: grafana/grafana:10.3.4-ubuntu
     container_name: grafana
-    restart: always
+    restart: unless-stopped
     user: root
     environment:
       TZ: Asia/Shanghai
@@ -84,7 +84,7 @@ services:
     volumes:
       - ./grafana:/var/lib/grafana
     ports:
-      - 80:3000
+      - 3000:3000
     depends_on:
       - zabbix-pgsql
       - zabbix-server
